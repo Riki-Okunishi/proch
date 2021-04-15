@@ -1,4 +1,4 @@
-package executer
+package proch
 
 import (
 	"os/exec"

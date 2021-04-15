@@ -2,8 +2,6 @@ module github.com/Riki-Okunishi/proch
 
 go 1.15
 
-replace github.com/Riki-Okunishi/proch/internal/executer => ./internal/executer
-
 require (
 	fyne.io/fyne/v2 v2.0.2
 	github.com/getlantern/systray v1.1.0
