@@ -1,0 +1,15 @@
+{
+  "version": 1.0,
+  "profiles": [
+    {
+      "ssid": "KE101-Proxy(2.4GHz)",
+      "proxyEnable": true,
+      "proxyServer": "proxy.doshisha.ac.jp:8080",
+      "proxyOverride": "172.20.69.*;<local>"
+    },
+    {
+      "ssid": "KE101-Core(2.4GHz)",
+      "proxyEnable": false
+    }
+  ]
+}
