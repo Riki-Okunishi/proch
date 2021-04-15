@@ -7,7 +7,6 @@ import (
 	"golang.org/x/sys/windows/registry"
 
 	"github.com/getlantern/systray"
-	"github.com/Riki-Okunishi/proch/internal/executer"
 )
 type clickEvent struct {
 	systray.MenuItem
@@ -111,7 +110,7 @@ func (ch *clickHandler) AddEvent(wp wlanProfile) {
 
 func (ch *clickHandler) HandleClick() {
 	//current network must be checked
-	cssid := executer.GetCurrentSsid()
+	cssid := GetCurrentSsid()
 	fmt.Printf("Current SSID: '%s'\n", cssid)
 	if ec, ok := ch.eventList[cssid]; ok {
 		ec.Check()
