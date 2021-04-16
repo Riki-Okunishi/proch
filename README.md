@@ -36,3 +36,7 @@ go install -ldflags -H=windowsgui
 2. Put the `setting.json` file in the same directory with `proch.exe`.
    `proch.exe` is installed in `%USERPROFILE%/go/bin` if you build with `go install`.
 3. Execute `proch.exe` by double-click or use the `proch` command in terminal.
+
+
+##  License
+MIT License

@@ -5,7 +5,6 @@ import (
 	"os"
 
 	"github.com/getlantern/systray"
-	"github.com/getlantern/systray/example/icon"
 )
 
 type proxyChanger struct {
@@ -50,7 +49,7 @@ func (pc *proxyChanger) onReady() {
 	}
 	
 	// application setting
-	systray.SetTemplateIcon(icon.Data, icon.Data)
+	systray.SetTemplateIcon(iconData, iconData)
 	systray.SetTitle("Proxy Changer")
 	systray.SetTooltip("Select Wlan Prifile")
 
