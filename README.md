@@ -4,16 +4,17 @@
 
 It's developed using [`systray`](https://github.com/getlantern/systray).
 
-## Get Started
+## How to Build
 
 ```bash
 git clone https://github.com/Riki-Okunishi/proch.git
 cd proch/cmd/proch
-go install
+go install -ldflags -H=windowsgui
 ```
 
 ## Usage
-1. Create `setting.json`, the list of your wireless network and proxy setting.
+1. Create `setting.json` shown below. You list up your wireless network and proxy setting in this file.
+   If the value of "proxyEnable" is true for a given network, then you should specify the values of "proxyServer" and "proxyOverride".
 
 ```json: setting.json
 {
@@ -32,6 +33,6 @@ go install
 }
 ```
 
-2. Put `setting.json` into any folder.
-3. Open this folder in terminal such as `cmd`.
-4. execute the command, `proch` (if you want to execute in background, use `proch &`)
+2. Put the `setting.json` file in the same directory with `proch.exe`.
+   `proch.exe` is installed in `%USERPROFILE%/go/bin` if you build with `go install`.
+3. Execute `proch.exe` by double-click or use the `proch` command in terminal.
