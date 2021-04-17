@@ -51,12 +51,34 @@ func (pc *proxyChanger) onReady() {
 	// application setting
 	systray.SetTemplateIcon(iconData, iconData)
 	systray.SetTitle("Proxy Changer")
-	systray.SetTooltip("Select Wlan Prifile")
+	//systray.SetTooltip("Proxy Changer")
 
 	/* Add MenuItem representing wlan profiles */
 	// Registry to clickHandler
 	ch := NewClickHandler()
-	for _, v := range ps.Profiles { // v1: addMenu before goroutine
+
+	// separate proxy and non-proxy profiles
+	var proxy []wlanProfile
+	var non_proxy []wlanProfile
+	for _, v := range ps.Profiles {
+		if v.ProxyEnable {
+			proxy = append(proxy, v)
+		}else{
+			non_proxy = append(non_proxy, v)
+		}
+	}
+
+	// add non-Proxy network
+	// systray.AddMenuItem("non-Proxy Network", "network not required proxy")
+	for _, v := range non_proxy {
+		ch.AddEvent(v)
+	}
+
+	systray.AddSeparator()
+	
+	// add Porxy network
+	// systray.AddMenuItem("Proxy Network", "network required proxy")
+	for _, v := range proxy {
 		ch.AddEvent(v)
 	}
 
