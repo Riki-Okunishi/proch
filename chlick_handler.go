@@ -23,6 +23,8 @@ func (ce *clickEvent) WaitClick() {
 		ce.eventCh <- ce.WlanProfile.Ssid
 		case <-ce.CloseCh:
 			fmt.Printf("Close goroutine %s\n", ce.WlanProfile.Ssid)
+			close(ce.ClickedCh)
+			close(ce.CloseCh)
 			return
 		}
 	}
@@ -114,6 +116,9 @@ func (ch *clickHandler) HandleClick() {
 	fmt.Printf("Current SSID: '%s'\n", cssid)
 	if ec, ok := ch.eventList[cssid]; ok {
 		ec.Check()
+		ch.setTooltop(ec.WlanProfile.ProxyEnable)
+	} else {
+		ch.setTooltop(false)
 	}
 
 	// exec goroutine each Buttom
@@ -149,6 +154,9 @@ func (ch *clickHandler) HandleClick() {
 					}
 					e.Uncheck()
 				}
+
+				// change Tooltip
+				ch.setTooltop(e.WlanProfile.ProxyEnable)
 			}
 		}
 	}
@@ -159,4 +167,14 @@ func (ch *clickHandler) CloseAllCh() {
 	for _, e := range ch.eventList {
 		e.CloseCh <- struct{}{}
 	}
+}
+
+func (ch *clickHandler) setTooltop(proxyEnable bool) {
+	var str string
+	if proxyEnable {
+		str = "Enable"
+	} else {
+		str = "Disable"
+	}
+	systray.SetTooltip(fmt.Sprintf("Proxy Changer\nProxy: %s", str))
 }
