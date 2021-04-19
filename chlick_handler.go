@@ -119,9 +119,9 @@ func (ch *clickHandler) HandleClick() {
 	fmt.Printf("Current SSID: '%s'\n", cssid)
 	if ec, ok := ch.eventList[cssid]; ok {
 		ec.Check()
-		ch.setTooltop(ec.WlanProfile.ProxyEnable)
+		setTooltip(ec.WlanProfile.ProxyEnable)
 	} else {
-		ch.setTooltop(false)
+		setTooltip(false)
 	}
 
 	// exec goroutine each Buttom
@@ -159,7 +159,7 @@ func (ch *clickHandler) HandleClick() {
 				}
 
 				// change Tooltip
-				ch.setTooltop(e.WlanProfile.ProxyEnable)
+				setTooltip(e.WlanProfile.ProxyEnable)
 			}
 		}
 	}
@@ -172,7 +172,7 @@ func (ch *clickHandler) CloseAllCh() {
 	}
 }
 
-func (ch *clickHandler) setTooltop(proxyEnable bool) {
+func setTooltip(proxyEnable bool) {
 	var str string
 	if proxyEnable {
 		str = "Enable"
