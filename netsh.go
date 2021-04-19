@@ -5,11 +5,14 @@ import (
 	"fmt"
 	"os"
 	"strings"
+	"syscall"
 
 )
 
 func execNetsh() string {
-	out, err := exec.Command("cmd", "/C", "netsh", "wlan", "show", "profiles").Output()
+	cmd := exec.Command("cmd", "/C", "netsh", "wlan", "show", "profiles")
+	cmd.SysProcAttr = &syscall.SysProcAttr{HideWindow: true}
+	out, err := cmd.Output()
 	if err != nil {
 		fmt.Printf("Error: Failed to execute 'cmd /C netsh wlan show profile'\n\t%s\n\n", err)
 		os.Exit(1)
@@ -19,13 +22,6 @@ func execNetsh() string {
 
 
 func GetWlanProfiles() []string {
-	// change encoding from Shift-JIS to UTF-8
-	err := exec.Command("cmd", "/C", "chcp", "65001").Run()
-	if err != nil {
-		fmt.Printf("Error: Failed to change encoding to UTF-8 by executing 'chcp 65001'\n\t%s\n\n", err)
-		os.Exit(1)
-	}
-
 	// execute command 'netsh wlan show profiles'
 	netsh_profiles := execNetsh()
 
@@ -43,7 +39,9 @@ func GetWlanProfiles() []string {
 }
 
 func GetCurrentSsid() string {
-	out, err := exec.Command("cmd", "/C", "netsh", "wlan", "show", "interface").Output()
+	cmd := exec.Command("cmd", "/C", "netsh", "wlan", "show", "interface")
+	cmd.SysProcAttr = &syscall.SysProcAttr{HideWindow: true}
+	out, err := cmd.Output()
 	if err != nil {
 		fmt.Printf("Error: Failed to execute 'cmd /C netsh wlan show interface'\n\t%s\n\n", err)
 		return ""
