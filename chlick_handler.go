@@ -3,6 +3,7 @@ package proch
 import (
 	"fmt"
 	"os/exec"
+	"syscall"
 	
 	"golang.org/x/sys/windows/registry"
 
@@ -35,6 +36,7 @@ func (ce *clickEvent) Connect() error {
 
 	// disconnect current wlan
 	netsh_disconnect := exec.Command("C:\\Windows\\system32\\netsh.exe", "wlan", "disconnect")
+	netsh_disconnect.SysProcAttr = &syscall.SysProcAttr{HideWindow: true}
 	out, err := netsh_disconnect.Output()
 	if err != nil {
 		fmt.Printf("Error: faild to disconnect\n\t%s\n", err)
@@ -44,6 +46,7 @@ func (ce *clickEvent) Connect() error {
 
 	// Connect wlan
 	netsh_connect := exec.Command("C:\\Windows\\system32\\netsh.exe", "wlan", "connect", fmt.Sprintf("name=%s", ce.WlanProfile.Ssid))
+	netsh_connect.SysProcAttr = &syscall.SysProcAttr{HideWindow: true}
 	out, err = netsh_connect.Output()
 	if err != nil {
 		fmt.Printf("Error: failed to connect (wlan=%s)\n\t%s\n", ce.WlanProfile.Ssid, err)
