@@ -38,5 +38,15 @@ go install -ldflags -H=windowsgui
 3. Execute `proch.exe` by double-click or use the `proch` command in terminal.
 
 
+## Add to startup
+
+If you want proch to be up when your computer has started up, you can add proch to startup programs.
+
+### Windwos
+
+1. Open "File Explorer".
+2. Input `shell:startup` to address bar.  This will open "Startup" folder.
+3. Create a shortcut to `proch.exe` in the "Startup" folder.
+
 ##  License
 MIT License
