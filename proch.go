@@ -4,11 +4,18 @@ import (
 	"fmt"
 	"os"
 
+	"golang.org/x/sys/windows/registry"
+
 	"github.com/getlantern/systray"
 )
 
-type proxyChanger struct {
+const (
+	registryKey = `SOFTWARE\Proch`
+	defaultPath = "./setting.json"
+)
 
+type proxyChanger struct {
+	json string
 }
 
 func NewProxyChanger() *proxyChanger {
@@ -31,6 +38,23 @@ func (pc *proxyChanger) createSettingJson() {
 	// 3. Export settings as JSON
 }
 
+// getSettingJsonPath will return "setting.json" file path from registry. 
+// If not exist registry key "HKLM\SOFTWARE\Proch\SettingJson" or it's blank, will return defaultPath "./setting.json".
+func getSettingJsonPath() string {
+	k, err := registry.OpenKey(registry.LOCAL_MACHINE, registryKey, registry.QUERY_VALUE)
+	if err != nil {
+		return defaultPath
+	}
+	defer k.Close()
+
+	s, _, err := k.GetStringValue("SettingJson")
+	if err != nil || s == "" {
+		return defaultPath
+	}
+
+	return s
+}
+
 func (pc *proxyChanger) Run() {
 	systray.Run(pc.onReady, pc.onExit)
 }
@@ -42,7 +66,9 @@ func (pc *proxyChanger) onExit() {
 
 func (pc *proxyChanger) onReady() {
 	// Load from setting.json to create SSID list
-	ps, err := ImportJson("./setting.json")
+	pc.json = getSettingJsonPath()
+
+	ps, err := ImportJson(pc.json)
 	if err != nil {
 		fmt.Printf("Error: failed to open setting.json\n")
 		os.Exit(1)
