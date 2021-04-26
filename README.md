@@ -1,6 +1,6 @@
 # proch
 
-`proxychange` makes it easy to change proxy setting for win10.
+`proxychange` makes it easy to change proxy setting for Windows 10.
 
 It's developed using [`systray`](https://github.com/getlantern/systray).
 
@@ -35,14 +35,14 @@ go install -ldflags -H=windowsgui
 
 2. Put the `setting.json` file in the same directory with `proch.exe`.
    `proch.exe` is installed in `%USERPROFILE%/go/bin` if you build with `go install`.
-3. Execute `proch.exe` by double-click or use the `proch` command in terminal.
+3. Execute `proch.exe` by double-click or execute `proch` command in terminal if you installed with `go install`.
 
 
 ## Add to startup
 
 If you want proch to be up when your computer has started up, you can add proch to startup programs.
 
-### Windwos
+### Windows
 
 1. Open "File Explorer".
 2. Input `shell:startup` to address bar.  This will open "Startup" folder.
