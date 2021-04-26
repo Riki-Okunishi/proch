@@ -37,6 +37,13 @@ go install -ldflags -H=windowsgui
    `proch.exe` is installed in `%USERPROFILE%/go/bin` if you build with `go install`.
 3. Execute `proch.exe` by double-click or execute `proch` command in terminal if you installed with `go install`.
 
+## How to change `setting.json` location
+
+You can change the path of `setting.json` with any path by adding/editing the registry key.
+
+Add/Edit the registry key `HKEY_LOCAL_MACHINE\SOFTWARE\Proch\SettingJson` as `REG_SZ` with your `setting.json` path.
+
+If not be registerd such key or the data of key is blank, proch loads `setting.json` from the same path in which proch execute.
 
 ## Add to startup
 
