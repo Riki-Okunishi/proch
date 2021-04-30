@@ -70,15 +70,15 @@ go install -ldflags -H=windowsgui github.com/Riki-Okunishi/proch/cmd/proch@lates
 
 You can change the path of `setting.json` instead of the same directory as `proch` by adding/editing the registry key.
 
-1. Open "Registry Editor".
+1. Open "Registry Editor" (required administrator permission).
 2. Create the registry key `HKEY_LOCAL_MACHINE\SOFTWARE\Proch\SettingJson`.
 3. Add the value to this key as "string value(REG_SZ)" and set the data to the directory path where you want to place the `setting.json` file.
 
-If the registry key is not registered or the data of the key is invalid, proch will search the directory where `proch.exe` was execute.
+If the registry key is not registered or the data of the key is invalid, it will be assumed to be located in the directory where you ran `proch`.
 
 ## Add to startup
 
-If you want proch to be up when your computer has started up, you can add proch to startup programs.
+If you want `proch` to be up when your computer has started up, you need to register `proch.exe` as a startup programs.
 
 1. Open "File Explorer".
 2. Input `shell:startup` to address bar. This will open "Startup" folder.
