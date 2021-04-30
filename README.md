@@ -8,7 +8,9 @@ It's developed using [`systray`](https://github.com/getlantern/systray).
 
 ## How to Build
 
-If you have already installed the Go language, you can build it yourself without downloading the binary from the GitHub release page.
+Download the latest `proch.exe` binary file from [Releases](https://github.com/Riki-Okunishi/proch/releases).
+
+If you have already installed the Go language, you can build it yourself without downloading the binary file.
 
 ```bash
 go install -ldflags -H=windowsgui github.com/Riki-Okunishi/proch/cmd/proch@latest
@@ -26,7 +28,7 @@ go install -ldflags -H=windowsgui github.com/Riki-Okunishi/proch/cmd/proch@lates
       "ssid": "Proxy SSID",
       "proxyEnable": true,
       "proxyServer": "proxy.address:PORT",
-      "proxyOverride": "exclude address[;<local>]"
+      "proxyOverride": "excluded address[;<local>]"
     },
     {
       "ssid": "non-Proxy SSID",

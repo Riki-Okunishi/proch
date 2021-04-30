@@ -4,9 +4,11 @@
 
 このプログラムは、[`systray`](https://github.com/getlantern/systray)を使って開発されています。
 
-## ビルド方法
+## インストール方法
 
-もしGo言語をインストール済みであれば、GitHubのReleaseページからバイナリをダウンロードせずに自分でビルドできます。
+[Releasesページ](https://github.com/Riki-Okunishi/proch/releases)から最新版の `proch.exe` をダウンロードしてください。
+
+もしGo言語をインストール済みであれば、バイナリをダウンロードせずに自分でビルドできます。
 
 ```bash
 go install -ldflags -H=windowsgui github.com/Riki-Okunishi/proch/cmd/proch@latest
@@ -36,7 +38,7 @@ go install -ldflags -H=windowsgui github.com/Riki-Okunishi/proch/cmd/proch@lates
 
 > Note: `"proxyOverride"` での `;<local>` の部分は任意です。列挙する場合の区切り文字が `;` で、『ローカル(イントラネット)のアドレスにはプロキシ サーバーを使わない』のチェックボックにチェックを入れるオプションが `<local>` です。
 
-2. 作成した `setting.json` ファイルを `proch.exe` と同じディレクトリに配置してください(配置する場所は自由です)。
+2. 作成した `setting.json` ファイルを `proch.exe` と同じディレクトリに配置してください(配置するディレクトリは自由です)。
    `go install` コマンドを使ってインストールした場合は、`proch.exe` は `%USERPROFILE%/go/bin` に配置されています。
 3. 実行するには、`proch.exe` をダブルクリックするか、そのディレクトリをターミナルで `proch` と入力してEnter(`%USERPROFILE%/go/bin`にPathが通っている場合)です。後述する `setting.json` の配置場所変更を行った場合、ターミナルではどこからでも呼び出せます。
 
