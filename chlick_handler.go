@@ -4,24 +4,25 @@ import (
 	"fmt"
 	"os/exec"
 	"syscall"
-	
+
 	"golang.org/x/sys/windows/registry"
 
 	"github.com/getlantern/systray"
 )
+
 type clickEvent struct {
 	systray.MenuItem
 	WlanProfile wlanProfile
-	eventCh chan string
-	CloseCh chan struct{}
+	eventCh     chan string
+	CloseCh     chan struct{}
 }
 
 func (ce *clickEvent) WaitClick() {
 	for {
 		select {
 		case <-ce.ClickedCh:
-		fmt.Printf("\t%s WaitClick() called!\n", ce.WlanProfile.Ssid)
-		ce.eventCh <- ce.WlanProfile.Ssid
+			fmt.Printf("\t%s WaitClick() called!\n", ce.WlanProfile.Ssid)
+			ce.eventCh <- ce.WlanProfile.Ssid
 		case <-ce.CloseCh:
 			fmt.Printf("Close goroutine %s\n", ce.WlanProfile.Ssid)
 			close(ce.ClickedCh)
@@ -32,7 +33,7 @@ func (ce *clickEvent) WaitClick() {
 }
 
 // Connect will connect the wlan according the information this object has.
-// This function is expected to be called when clickHandler.current is nil. 
+// This function is expected to be called when clickHandler.current is nil.
 func (ce *clickEvent) Connect() error {
 	/* execute netsh and reg*/
 
@@ -66,7 +67,7 @@ func (ce *clickEvent) Connect() error {
 		fmt.Printf("Error: Key.SetDWordValue(...)\n\t%s\n\n", err)
 		return err
 	}
-	
+
 	if dword == 0 {
 		return nil
 	}
@@ -102,12 +103,11 @@ func (ce *clickEvent) Disconnect() error {
 	return nil
 }
 
-
-
 type clickHandler struct {
-	eventCh chan string
-	current *clickEvent
+	eventCh   chan string
+	current   *clickEvent
 	eventList map[string]*clickEvent
+	refresh   *systray.MenuItem
 }
 
 func NewClickHandler() *clickHandler {
@@ -121,19 +121,9 @@ func (ch *clickHandler) AddEvent(wp wlanProfile) {
 	ch.eventList[wp.Ssid] = ce
 }
 
-
 func (ch *clickHandler) HandleClick() {
 	//current network must be checked
-	cssid := GetCurrentSsid()
-	fmt.Printf("Current SSID: '%s'\n", cssid)
-	if ec, ok := ch.eventList[cssid]; ok {
-		ec.Check()
-		setTooltip(ec.WlanProfile.ProxyEnable)
-		ch.current = ec
-	} else {
-		setTooltip(false)
-		ch.current = nil
-	}
+	ch.refreshCurrentSsid()
 
 	// exec goroutine each Buttom
 	for _, e := range ch.eventList {
@@ -191,7 +181,7 @@ func (ch *clickHandler) HandleClick() {
 				setTooltip(ce.WlanProfile.ProxyEnable)
 				ch.current = ce
 			} else {
-				
+
 				// Dissconnect current SSID
 				if ch.current == nil {
 					fmt.Printf("Error: expected ch.current is not nil when checked menu item was clicked\n")
@@ -207,6 +197,9 @@ func (ch *clickHandler) HandleClick() {
 				setTooltip(false)
 				ch.current = nil
 			}
+		case <-ch.refresh.ClickedCh:
+			fmt.Printf("Clicked Refresh\n")
+			ch.refreshCurrentSsid()
 		}
 	}
 }
@@ -227,4 +220,20 @@ func setTooltip(proxyEnable bool) {
 		str = "Disable"
 	}
 	systray.SetTooltip(fmt.Sprintf("Proxy Changer\nProxy: %s", str))
+}
+
+func (ch *clickHandler) refreshCurrentSsid() {
+	cssid := GetCurrentSsid()
+	fmt.Printf("Current SSID: '%s'\n", cssid)
+	for _, n := range ch.eventList {
+		n.Uncheck()
+	}
+	if ec, ok := ch.eventList[cssid]; ok {
+		ec.Check()
+		setTooltip(ec.WlanProfile.ProxyEnable)
+		ch.current = ec
+	} else {
+		setTooltip(false)
+		ch.current = nil
+	}
 }
