@@ -4,24 +4,25 @@ import (
 	"fmt"
 	"os/exec"
 	"syscall"
-	
+
 	"golang.org/x/sys/windows/registry"
 
 	"github.com/getlantern/systray"
 )
+
 type clickEvent struct {
 	systray.MenuItem
 	WlanProfile wlanProfile
-	eventCh chan string
-	CloseCh chan struct{}
+	eventCh     chan string
+	CloseCh     chan struct{}
 }
 
 func (ce *clickEvent) WaitClick() {
 	for {
 		select {
 		case <-ce.ClickedCh:
-		fmt.Printf("\t%s WaitClick() called!\n", ce.WlanProfile.Ssid)
-		ce.eventCh <- ce.WlanProfile.Ssid
+			fmt.Printf("\t%s WaitClick() called!\n", ce.WlanProfile.Ssid)
+			ce.eventCh <- ce.WlanProfile.Ssid
 		case <-ce.CloseCh:
 			fmt.Printf("Close goroutine %s\n", ce.WlanProfile.Ssid)
 			close(ce.ClickedCh)
@@ -31,23 +32,15 @@ func (ce *clickEvent) WaitClick() {
 	}
 }
 
+// Connect will connect the wlan according the information this object has.
+// This function is expected to be called when clickHandler.current is nil.
 func (ce *clickEvent) Connect() error {
 	/* execute netsh and reg*/
-
-	// disconnect current wlan
-	netsh_disconnect := exec.Command("C:\\Windows\\system32\\netsh.exe", "wlan", "disconnect")
-	netsh_disconnect.SysProcAttr = &syscall.SysProcAttr{HideWindow: true}
-	out, err := netsh_disconnect.Output()
-	if err != nil {
-		fmt.Printf("Error: faild to disconnect\n\t%s\n", err)
-		return err
-	}
-	fmt.Printf("Disconnect wlan:\n\t%s\n\n", string(out))
 
 	// Connect wlan
 	netsh_connect := exec.Command("C:\\Windows\\system32\\netsh.exe", "wlan", "connect", fmt.Sprintf("name=%s", ce.WlanProfile.Ssid))
 	netsh_connect.SysProcAttr = &syscall.SysProcAttr{HideWindow: true}
-	out, err = netsh_connect.Output()
+	out, err := netsh_connect.Output()
 	if err != nil {
 		fmt.Printf("Error: failed to connect (wlan=%s)\n\t%s\n", ce.WlanProfile.Ssid, err)
 		return err
@@ -74,7 +67,7 @@ func (ce *clickEvent) Connect() error {
 		fmt.Printf("Error: Key.SetDWordValue(...)\n\t%s\n\n", err)
 		return err
 	}
-	
+
 	if dword == 0 {
 		return nil
 	}
@@ -94,11 +87,27 @@ func (ce *clickEvent) Connect() error {
 	return nil
 }
 
+// Disconnect will disconnect from the wlan indicated this object.
+// This function is expected to be call before clickEvent.Connect() is called.
+func (ce *clickEvent) Disconnect() error {
+	// disconnect current wlan
+	netsh_disconnect := exec.Command("C:\\Windows\\system32\\netsh.exe", "wlan", "disconnect")
+	netsh_disconnect.SysProcAttr = &syscall.SysProcAttr{HideWindow: true}
+	out, err := netsh_disconnect.Output()
+	if err != nil {
+		fmt.Printf("Error: faild to disconnect\n\t%s\n", err)
+		return err
+	}
+	fmt.Printf("Disconnect wlan:\n\t%s\n\n", string(out))
 
+	return nil
+}
 
 type clickHandler struct {
-	eventCh chan string
+	eventCh   chan string
+	current   *clickEvent
 	eventList map[string]*clickEvent
+	refresh   *systray.MenuItem
 }
 
 func NewClickHandler() *clickHandler {
@@ -112,17 +121,9 @@ func (ch *clickHandler) AddEvent(wp wlanProfile) {
 	ch.eventList[wp.Ssid] = ce
 }
 
-
 func (ch *clickHandler) HandleClick() {
 	//current network must be checked
-	cssid := GetCurrentSsid()
-	fmt.Printf("Current SSID: '%s'\n", cssid)
-	if ec, ok := ch.eventList[cssid]; ok {
-		ec.Check()
-		setTooltip(ec.WlanProfile.ProxyEnable)
-	} else {
-		setTooltip(false)
-	}
+	ch.refreshCurrentSsid()
 
 	// exec goroutine each Buttom
 	for _, e := range ch.eventList {
@@ -137,30 +138,68 @@ func (ch *clickHandler) HandleClick() {
 		case ssid := <-ch.eventCh:
 			fmt.Printf("\tclicked %s!\n", ssid)
 			// check clicked SSID
-			e, ok := ch.eventList[ssid]
+			ce, ok := ch.eventList[ssid]
 			if !ok {
-				fmt.Printf("Error: not found such event represented as '%s'", ssid)
+				fmt.Printf("Error: not found such event represented as '%s'\n", ssid)
 				continue
 			}
-			if !e.Checked() {
+
+			// Check this ssid exists around here
+			net := GetWlanNetworks()
+			find := false
+			for _, s := range net {
+				if s == ce.WlanProfile.Ssid {
+					find = true
+					break
+				}
+			}
+			if !find {
+				fmt.Printf("error: not found the network '%s' around here\n", ce.WlanProfile.Ssid)
+				continue
+			}
+
+			if !ce.Checked() {
+
+				//disconnect from previous network
+				if ch.current != nil {
+					if err := ch.current.Disconnect(); err != nil {
+						fmt.Printf("Error: failed to disconnect from %s\n\t%s\n", ssid, err)
+						continue
+					}
+					// uncheck previous menu
+					ch.current.Uncheck()
+					setTooltip(false)
+					ch.current = nil
+				}
+
 				// try connect
-				if err := e.Connect(); err != nil {
+				if err := ce.Connect(); err != nil {
 					fmt.Printf("Error: failed to connect\n\t%s\n", err)
 					continue
 				}
-				e.Check()
+				ce.Check()
+				setTooltip(ce.WlanProfile.ProxyEnable)
+				ch.current = ce
+			} else {
 
-				// uncheck other menu
-				for _, e := range ch.eventList {
-					if e.WlanProfile.Ssid == ssid {
-						continue
-					}
-					e.Uncheck()
+				// Dissconnect current SSID
+				if ch.current == nil {
+					fmt.Printf("Error: expected ch.current is not nil when checked menu item was clicked\n")
+					continue
 				}
 
-				// change Tooltip
-				setTooltip(e.WlanProfile.ProxyEnable)
+				if err := ch.current.Disconnect(); err != nil {
+					fmt.Printf("Error: failed to disconnect\n\t%s\n", err)
+					continue
+				}
+
+				ch.current.Uncheck()
+				setTooltip(false)
+				ch.current = nil
 			}
+		case <-ch.refresh.ClickedCh:
+			fmt.Printf("Clicked Refresh\n")
+			ch.refreshCurrentSsid()
 		}
 	}
 }
@@ -172,6 +211,7 @@ func (ch *clickHandler) CloseAllCh() {
 	}
 }
 
+// setTooltip will set the Tooltip text whether the proxy settings is enable or disable
 func setTooltip(proxyEnable bool) {
 	var str string
 	if proxyEnable {
@@ -180,4 +220,20 @@ func setTooltip(proxyEnable bool) {
 		str = "Disable"
 	}
 	systray.SetTooltip(fmt.Sprintf("Proxy Changer\nProxy: %s", str))
+}
+
+func (ch *clickHandler) refreshCurrentSsid() {
+	cssid := GetCurrentSsid()
+	fmt.Printf("Current SSID: '%s'\n", cssid)
+	for _, n := range ch.eventList {
+		n.Uncheck()
+	}
+	if ec, ok := ch.eventList[cssid]; ok {
+		ec.Check()
+		setTooltip(ec.WlanProfile.ProxyEnable)
+		ch.current = ec
+	} else {
+		setTooltip(false)
+		ch.current = nil
+	}
 }

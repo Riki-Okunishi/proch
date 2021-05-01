@@ -113,10 +113,13 @@ func (pc *proxyChanger) onReady() {
 	// clickHandler goroutine
 	go ch.HandleClick() // v2: AddMenu after goroutine
 	
+	// Refresh Menu
+	systray.AddSeparator()
+	ch.refresh = systray.AddMenuItem("Refresh", "Refresh the SSID list")
 
 	// Quit Menu	
 	systray.AddSeparator()
-	mQuitOrig := systray.AddMenuItem("終了", "Quit the whole app")
+	mQuitOrig := systray.AddMenuItem("Quit", "Quit the whole app")
 	go func() {
 		<-mQuitOrig.ClickedCh
 		fmt.Println("Requesting quit")

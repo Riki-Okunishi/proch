@@ -54,3 +54,24 @@ func GetCurrentSsid() string {
 	
 	return cssid
 }
+
+func GetWlanNetworks() []string {
+	tmp := []string{}
+	cmd := exec.Command("cmd", "/C", "netsh", "wlan", "show", "networks")
+	cmd.SysProcAttr = &syscall.SysProcAttr{HideWindow: true}
+	out, err := cmd.Output()
+	if err != nil {
+		fmt.Printf("Error: falied to execute 'cmd /C netsh wlan show networks'\n\t%s\n", err)
+		return tmp
+	}
+	tmp = strings.Split(string(out), " : ")
+	tmp = tmp[2:]
+	net := []string{}
+	for i := 0; i < len(tmp); i+=4 {
+		splts := strings.Split(tmp[i], "\n")
+		trimed := strings.Trim(splts[0], " ")
+		net = append(net, trimed[:len(trimed)-1])
+	}
+
+	return net
+}
