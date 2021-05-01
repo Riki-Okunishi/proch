@@ -1,9 +1,7 @@
-package proch_test
+package proch
 
 import (
 	"testing"
-
-	"github.com/Riki-Okunishi/proch"
 )
 
 var (
@@ -11,7 +9,7 @@ var (
 )
 
 func TestImportJson(t *testing.T) {
-	wp, err := proch.ImportJson(filepath)
+	wp, err := ImportJson(filepath)
 	if err != nil {
 		t.Errorf("Failed to import JSON file '%s'\n", filepath)
 	}
