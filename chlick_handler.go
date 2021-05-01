@@ -31,23 +31,15 @@ func (ce *clickEvent) WaitClick() {
 	}
 }
 
+// Connect will connect the wlan according the information this object has.
+// This function is expected to be called when clickHandler.current is nil. 
 func (ce *clickEvent) Connect() error {
 	/* execute netsh and reg*/
-
-	// disconnect current wlan
-	netsh_disconnect := exec.Command("C:\\Windows\\system32\\netsh.exe", "wlan", "disconnect")
-	netsh_disconnect.SysProcAttr = &syscall.SysProcAttr{HideWindow: true}
-	out, err := netsh_disconnect.Output()
-	if err != nil {
-		fmt.Printf("Error: faild to disconnect\n\t%s\n", err)
-		return err
-	}
-	fmt.Printf("Disconnect wlan:\n\t%s\n\n", string(out))
 
 	// Connect wlan
 	netsh_connect := exec.Command("C:\\Windows\\system32\\netsh.exe", "wlan", "connect", fmt.Sprintf("name=%s", ce.WlanProfile.Ssid))
 	netsh_connect.SysProcAttr = &syscall.SysProcAttr{HideWindow: true}
-	out, err = netsh_connect.Output()
+	out, err := netsh_connect.Output()
 	if err != nil {
 		fmt.Printf("Error: failed to connect (wlan=%s)\n\t%s\n", ce.WlanProfile.Ssid, err)
 		return err
@@ -94,10 +86,27 @@ func (ce *clickEvent) Connect() error {
 	return nil
 }
 
+// Disconnect will disconnect from the wlan indicated this object.
+// This function is expected to be call before clickEvent.Connect() is called.
+func (ce *clickEvent) Disconnect() error {
+	// disconnect current wlan
+	netsh_disconnect := exec.Command("C:\\Windows\\system32\\netsh.exe", "wlan", "disconnect")
+	netsh_disconnect.SysProcAttr = &syscall.SysProcAttr{HideWindow: true}
+	out, err := netsh_disconnect.Output()
+	if err != nil {
+		fmt.Printf("Error: faild to disconnect\n\t%s\n", err)
+		return err
+	}
+	fmt.Printf("Disconnect wlan:\n\t%s\n\n", string(out))
+
+	return nil
+}
+
 
 
 type clickHandler struct {
 	eventCh chan string
+	current *clickEvent
 	eventList map[string]*clickEvent
 }
 
@@ -120,8 +129,10 @@ func (ch *clickHandler) HandleClick() {
 	if ec, ok := ch.eventList[cssid]; ok {
 		ec.Check()
 		setTooltip(ec.WlanProfile.ProxyEnable)
+		ch.current = ec
 	} else {
 		setTooltip(false)
+		ch.current = nil
 	}
 
 	// exec goroutine each Buttom
@@ -137,29 +148,49 @@ func (ch *clickHandler) HandleClick() {
 		case ssid := <-ch.eventCh:
 			fmt.Printf("\tclicked %s!\n", ssid)
 			// check clicked SSID
-			e, ok := ch.eventList[ssid]
+			ec, ok := ch.eventList[ssid]
 			if !ok {
 				fmt.Printf("Error: not found such event represented as '%s'", ssid)
 				continue
 			}
-			if !e.Checked() {
+			if !ec.Checked() {
+
+				//disconnect from previous network
+				if ch.current != nil {
+					if err := ch.current.Disconnect(); err != nil {
+						fmt.Printf("Error: failed to disconnect from %s\n\t%s\n", ssid, err)
+						continue
+					}
+					// uncheck previous menu
+					ch.current.Uncheck()
+					setTooltip(false)
+					ch.current = nil
+				}
+
 				// try connect
-				if err := e.Connect(); err != nil {
+				if err := ec.Connect(); err != nil {
 					fmt.Printf("Error: failed to connect\n\t%s\n", err)
 					continue
 				}
-				e.Check()
-
-				// uncheck other menu
-				for _, e := range ch.eventList {
-					if e.WlanProfile.Ssid == ssid {
-						continue
-					}
-					e.Uncheck()
+				ec.Check()
+				setTooltip(ec.WlanProfile.ProxyEnable)
+				ch.current = ec
+			} else {
+				
+				// Dissconnect current SSID
+				if ch.current == nil {
+					fmt.Printf("Error: expected ch.current is not nil when checked menu item was clicked\n")
+					continue
 				}
 
-				// change Tooltip
-				setTooltip(e.WlanProfile.ProxyEnable)
+				if err := ch.current.Disconnect(); err != nil {
+					fmt.Printf("Error: failed to disconnect\n\t%s\n", err)
+					continue
+				}
+
+				ch.current.Uncheck()
+				setTooltip(false)
+				ch.current = nil
 			}
 		}
 	}
@@ -172,6 +203,7 @@ func (ch *clickHandler) CloseAllCh() {
 	}
 }
 
+// setTooltip will set the Tooltip text whether the proxy settings is enable or disable
 func setTooltip(proxyEnable bool) {
 	var str string
 	if proxyEnable {
