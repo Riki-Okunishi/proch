@@ -148,12 +148,27 @@ func (ch *clickHandler) HandleClick() {
 		case ssid := <-ch.eventCh:
 			fmt.Printf("\tclicked %s!\n", ssid)
 			// check clicked SSID
-			ec, ok := ch.eventList[ssid]
+			ce, ok := ch.eventList[ssid]
 			if !ok {
-				fmt.Printf("Error: not found such event represented as '%s'", ssid)
+				fmt.Printf("Error: not found such event represented as '%s'\n", ssid)
 				continue
 			}
-			if !ec.Checked() {
+
+			// Check this ssid exists around here
+			net := GetWlanNetworks()
+			find := false
+			for _, s := range net {
+				if s == ce.WlanProfile.Ssid {
+					find = true
+					break
+				}
+			}
+			if !find {
+				fmt.Printf("error: not found the network '%s' around here\n", ce.WlanProfile.Ssid)
+				continue
+			}
+
+			if !ce.Checked() {
 
 				//disconnect from previous network
 				if ch.current != nil {
@@ -168,13 +183,13 @@ func (ch *clickHandler) HandleClick() {
 				}
 
 				// try connect
-				if err := ec.Connect(); err != nil {
+				if err := ce.Connect(); err != nil {
 					fmt.Printf("Error: failed to connect\n\t%s\n", err)
 					continue
 				}
-				ec.Check()
-				setTooltip(ec.WlanProfile.ProxyEnable)
-				ch.current = ec
+				ce.Check()
+				setTooltip(ce.WlanProfile.ProxyEnable)
+				ch.current = ce
 			} else {
 				
 				// Dissconnect current SSID
