@@ -64,13 +64,14 @@ func GetWlanNetworks() []string {
 		fmt.Printf("Error: falied to execute 'cmd /C netsh wlan show networks'\n\t%s\n", err)
 		return tmp
 	}
-	tmp = strings.Split(string(out), " : ")
-	tmp = tmp[2:]
+	tmp = strings.Split(string(out), "\n")
 	net := []string{}
-	for i := 0; i < len(tmp); i+=4 {
-		splts := strings.Split(tmp[i], "\n")
-		trimed := strings.Trim(splts[0], " ")
-		net = append(net, trimed[:len(trimed)-1])
+	for _, l := range tmp {
+		if strings.Index(l, "SSID") == 0 {
+			ssid_line := strings.Split(l, ":")
+			trimed_ssid := strings.Trim(ssid_line[1], " ")
+			net = append(net, trimed_ssid[:len(trimed_ssid)-1])
+		}
 	}
 
 	return net
