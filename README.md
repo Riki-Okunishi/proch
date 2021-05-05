@@ -42,6 +42,13 @@ go install -ldflags -H=windowsgui github.com/Riki-Okunishi/proch/cmd/proch@lates
 
 2. Put the `setting.json` file in the same directory as `proch.exe`. You can put them in any directory.
    `proch.exe` is installed in `%USERPROFILE%/go/bin` if you build with `go install`.
+
+```
+your-directory/
+├── proch.exe
+└── setting.json
+```
+
 3. Double-click `proch.exe` or open that directory in a terminal and run the `proch` command (if `%USERPROFILE%/go/bin` has been added to Path). If you have changed the location of `setting.json` as described below, you can call it from any directory in the terminal.
 
 ## Usage
@@ -61,10 +68,18 @@ go install -ldflags -H=windowsgui github.com/Riki-Okunishi/proch/cmd/proch@lates
   Click `proch` icon to select SSID. Proxy network and non-Proxy networks are separated in the list.
 
     ![proch_menu](./doc/img/ssid_list.png)
-
-+ Click the SSID to connect then the SSID and the proxy settings will be switched. Connecting SSID is checked.
+  
+  Click the SSID to connect then the SSID and the proxy settings will be switched. Connecting SSID is checked.
 
     ![checked](./doc/img/checked.png)
+
++ Refresh the current SSID and the proxy settings
+
+  Click `Refresh` button, `proch` will reload the current SSID and its proxy settings.
+
++ Exit
+
+  Click the Quit button to exit `proch.exe`.
 
 ## How to change `setting.json` location
 
