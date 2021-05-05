@@ -39,8 +39,15 @@ go install -ldflags -H=windowsgui github.com/Riki-Okunishi/proch/cmd/proch@lates
 > Note: `"proxyOverride"` での `;<local>` の部分は任意です。列挙する場合の区切り文字が `;` で、『ローカル(イントラネット)のアドレスにはプロキシ サーバーを使わない』のチェックボックにチェックを入れるオプションが `<local>` です。
 
 2. 作成した `setting.json` ファイルを `proch.exe` と同じディレクトリに配置してください(配置するディレクトリは自由です)。
-   `go install` コマンドを使ってインストールした場合は、`proch.exe` は `%USERPROFILE%/go/bin` に配置されています。
-3. 実行するには、`proch.exe` をダブルクリックするか、そのディレクトリをターミナルで `proch` と入力してEnter(`%USERPROFILE%/go/bin`にPathが通っている場合)です。後述する `setting.json` の配置場所変更を行った場合、ターミナルではどこからでも呼び出せます。
+   `go install` コマンドを使ってインストールした場合、`proch.exe` は `%USERPROFILE%/go/bin` に配置されています。
+
+```
+your-directory/
+├── proch.exe
+└── setting.json
+```
+
+3. 実行するには `proch.exe` をダブルクリックするか、そのディレクトリをターミナルで開き `proch` と入力してEnter(`%USERPROFILE%/go/bin`にPathが通っている場合)です。後述する `setting.json` の配置場所変更を行った場合、ターミナルではどこからでも呼び出せます。
 
 ## 使い方
 
@@ -60,9 +67,17 @@ go install -ldflags -H=windowsgui github.com/Riki-Okunishi/proch/cmd/proch@lates
 
     ![proch_menu](./img/ssid_list.png)
 
-+ 接続したいSSIDをクリックすると、そのSSIDで接続しプロキシ設定が切り替わります。接続中のSSIDはチェックされた状態になります。
+  接続したいSSIDをクリックすると、そのSSIDで接続しプロキシ設定が切り替わります。接続中のSSIDはチェックされた状態になります。
 
     ![checked](./img/checked.png)
+
++ 接続状況の再読み込み
+
+  Refreshボタンを押すと、現在の接続状況に合わせてSSIDリストとプロキシ設定を更新します。
+
++ プログラムの終了
+
+  Quitボタン押下で `proch` を終了します。
 
 
 ## `setting.json`ファイルの配置場所変更
