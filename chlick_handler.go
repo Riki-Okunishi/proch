@@ -48,6 +48,16 @@ func (ce *clickEvent) Connect() error {
 	fmt.Printf("Connect wlan %s\n\t%s\n\n", ce.WlanProfile.Ssid, string(out))
 
 	// Setting Proxy by Editing Regidtry
+	err = ce.editProxySettings()
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (ce *clickEvent) editProxySettings() error {
+	// Setting Proxy by Editing Regidtry
 	var dword uint32
 	if ce.WlanProfile.ProxyEnable {
 		dword = 1
@@ -230,6 +240,12 @@ func (ch *clickHandler) refreshCurrentSsid() {
 	}
 	if ec, ok := ch.eventList[cssid]; ok {
 		ec.Check()
+		err := ec.editProxySettings()
+		if err != nil {
+			fmt.Printf("error: failed to refresh proxy setting in this network '%s'\n\t%s\n", ec.WlanProfile.Ssid, err)
+		} else {
+			fmt.Printf("refreshed proxy settings: %t\n", ec.WlanProfile.ProxyEnable)
+		}
 		setTooltip(ec.WlanProfile.ProxyEnable)
 		ch.current = ec
 	} else {
