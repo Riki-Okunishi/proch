@@ -119,15 +119,6 @@ func (pc *proxyChanger) onReady() {
 
 	// Quit Menu	
 	systray.AddSeparator()
-	mQuitOrig := systray.AddMenuItem("Quit", "Quit the whole app")
-	go func() {
-		<-mQuitOrig.ClickedCh
-		fmt.Println("Requesting quit")
-		ch.CloseAllCh()
-		systray.Quit()
-		fmt.Println("Finished quitting")
-	}()
-
-
+	ch.quit = systray.AddMenuItem("Quit", "Quit the whole app")
 
 }

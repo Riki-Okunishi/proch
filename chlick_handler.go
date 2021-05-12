@@ -118,6 +118,7 @@ type clickHandler struct {
 	current   *clickEvent
 	eventList map[string]*clickEvent
 	refresh   *systray.MenuItem
+	quit *systray.MenuItem
 }
 
 func NewClickHandler() *clickHandler {
@@ -210,6 +211,11 @@ func (ch *clickHandler) HandleClick() {
 		case <-ch.refresh.ClickedCh:
 			fmt.Printf("Clicked Refresh\n")
 			ch.refreshCurrentSsid()
+		case <-ch.quit.ClickedCh:		
+			fmt.Println("Requesting quit")
+			ch.CloseAllCh()
+			systray.Quit()
+			fmt.Println("Finished quitting")
 		}
 	}
 }
