@@ -2,7 +2,6 @@ package proch
 
 import (
 	"io/ioutil"
-
 	"encoding/json"
 )
 
@@ -12,14 +11,26 @@ type prochSetting struct {
 
 type wlanProfile struct {
 	Ssid string `json:"ssid"`
-	//Password string `json:"password"`
 	ProxyEnable bool `json:"proxyEnable"`
 	ProxyServer string `json:"proxyServer"`
 	ProxyOverride string `json:"proxyOverride"`
-
 }
 
-func ImportJson(filepath string) (*prochSetting, error) {
+type jsonLoadable interface {
+	Load(string) ([]wlanProfile, error)
+}
+
+type jsonLoader struct {
+	jsonLoadable
+}
+
+var _ jsonLoadable = &jsonLoader{}
+
+func NewJsonLoader() jsonLoadable {
+	return &jsonLoader{}
+}
+
+func (jl *jsonLoader) Load(filepath string) ([]wlanProfile, error) {
 	bytes, err := ioutil.ReadFile(filepath)
 	if err != nil {
 		return nil, err
@@ -30,5 +41,5 @@ func ImportJson(filepath string) (*prochSetting, error) {
 		return nil, err
 	}
 	
-	return &ps, nil
+	return ps.Profiles, nil
 }
