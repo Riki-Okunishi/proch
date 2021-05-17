@@ -12,7 +12,7 @@ func TestLoad(t *testing.T) {
 		expected int
 	}{
 		{
-			"/test/test.json",
+			"./test/test.json",
 			2,
 		},
 	}
