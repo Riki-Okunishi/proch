@@ -17,7 +17,7 @@ type wlanProfile struct {
 }
 
 type jsonLoadable interface {
-	Load(string) ([]wlanProfile, error)
+	Load(filepath string) ([]wlanProfile, error)
 }
 
 type jsonLoader struct {
