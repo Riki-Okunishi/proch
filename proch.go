@@ -57,11 +57,21 @@ func (pc *proxyChanger) onReady() {
 	}
 
 	for _, wp := range non_proxy_ssid {
-		pc.ssidList[wp.Ssid] = newSsidMenuItem(pc.ssidCh, wp.Ssid, wp.ProxyEnable, wp.ProxyServer, wp.ProxyOverride)
+		smi:= newSsidMenuItem(nil, pc.ssidCh, wp.Ssid, wp.ProxyEnable, wp.ProxyServer, wp.ProxyOverride)
+		if smi != nil {
+			mi := systray.AddMenuItemCheckbox(wp.Ssid, fmt.Sprintf("Connect to %s", wp.Ssid), false)
+			smi.MenuItem = mi
+			pc.ssidList[smi.ssid] = smi
+		}
 	}
 	systray.AddSeparator()
 	for _, wp := range proxy_ssid {
-		pc.ssidList[wp.Ssid] = newSsidMenuItem(pc.ssidCh, wp.Ssid, wp.ProxyEnable, wp.ProxyServer, wp.ProxyOverride)
+		smi:= newSsidMenuItem(nil, pc.ssidCh, wp.Ssid, wp.ProxyEnable, wp.ProxyServer, wp.ProxyOverride)
+		if smi != nil {
+			mi := systray.AddMenuItemCheckbox(wp.Ssid, fmt.Sprintf("Connect to %s", wp.Ssid), false)
+			smi.MenuItem = mi
+			pc.ssidList[smi.ssid] = smi
+		}
 	}
 	systray.AddSeparator()
 	pc.refresh = systray.AddMenuItem("Refresh", "Refresh the SSID list")
@@ -79,7 +89,7 @@ func (pc *proxyChanger) HandleClick() {
 		wg.Add(1)
 		fmt.Printf("Goroutine for %s\n", smi.ssid)
 		go func(smi *ssidMenuItem) {
-			smi.WaitClick()
+			smi.waitClick()
 			wg.Done()
 		}(smi)
 	}
@@ -129,12 +139,12 @@ func (pc *proxyChanger) HandleClick() {
 					fmt.Printf("error: failed to connect\n\t%s\n", err)
 					continue
 				}
-				if err := pc.registry.EditProxySettings(smi.proxyEanble, smi.proxyServer, smi.proxyOverride); err != nil {
+				if err := pc.registry.EditProxySettings(smi.proxyEnable, smi.proxyServer, smi.proxyOverride); err != nil {
 					fmt.Printf("error: failed to edit the registries\n\t%s\n", err)
 					continue
 				}
 				smi.Check()
-				setTooltip(smi.proxyEanble)
+				setTooltip(smi.proxyEnable)
 				pc.current = smi
 			} else {
 
@@ -162,6 +172,7 @@ func (pc *proxyChanger) HandleClick() {
 			wg.Wait()
 			systray.Quit()
 			fmt.Println("Finished quitting")
+			return
 		}
 	}
 }
@@ -173,14 +184,14 @@ func (pc *proxyChanger) refreshCurrentSsid() {
 		smi.Uncheck()
 	}
 	if smi, ok := pc.ssidList[cssid]; ok {
-		err := pc.registry.EditProxySettings(smi.proxyEanble, smi.proxyServer, smi.proxyOverride)
+		err := pc.registry.EditProxySettings(smi.proxyEnable, smi.proxyServer, smi.proxyOverride)
 		if err != nil {
 			fmt.Printf("error: failed to refresh proxy setting in this network '%s'\n\t%s\n", cssid, err)
 		} else {
-			fmt.Printf("refreshed proxy settings: %t\n", smi.proxyEanble)
+			fmt.Printf("refreshed proxy settings: %t\n", smi.proxyEnable)
 		}
 		smi.Check()
-		setTooltip(smi.proxyEanble)
+		setTooltip(smi.proxyEnable)
 		pc.current = smi
 	} else {
 		setTooltip(false)

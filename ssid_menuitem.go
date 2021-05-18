@@ -8,26 +8,26 @@ import (
 )
 
 type ssidMenuItem struct {
-	systray.MenuItem
+	*systray.MenuItem
 	ssid string
-	proxyEanble bool
+	proxyEnable bool
 	proxyServer string
 	proxyOverride string
 	ssidCh chan string
 	closeCh chan struct{}
 }
 
-func newSsidMenuItem(ssidCh chan string, ssid string, proxyEnable bool, proxyServer string, proxyOverride string) *ssidMenuItem {
-	mi := systray.AddMenuItemCheckbox(ssid, fmt.Sprintf("Connect to %s", ssid), false)
-	smi := &ssidMenuItem{MenuItem: *mi, ssid: ssid, proxyEanble: proxyEnable, proxyServer: proxyServer, proxyOverride: proxyOverride, ssidCh: ssidCh, closeCh: make(chan struct{})}
+func newSsidMenuItem(mi *systray.MenuItem, ssidCh chan string, ssid string, proxyEnable bool, proxyServer string, proxyOverride string) *ssidMenuItem {
+	// TODO: Add validation for mi, ssid, proxyServer and proxyOverride (when proxyEnable == true)
+	smi := &ssidMenuItem{MenuItem: mi, ssid: ssid, proxyEnable: proxyEnable, proxyServer: proxyServer, proxyOverride: proxyOverride, ssidCh: ssidCh, closeCh: make(chan struct{})}
 	return smi
 }
 
-func (smi *ssidMenuItem) WaitClick() {
+func (smi *ssidMenuItem) waitClick() {
 	for {
 	select {
 	case <-smi.ClickedCh:
-		fmt.Printf("%s WaitClick() called.\n", smi.ssid)
+		fmt.Printf("%s waitClick() called.\n", smi.ssid)
 		smi.ssidCh <- smi.ssid
 	case <-smi.closeCh:
 		fmt.Printf("Close goroutine %s\n", smi.ssid)

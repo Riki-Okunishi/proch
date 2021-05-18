@@ -13,7 +13,7 @@ const (
 
 type registryEditable interface {
 	GetSettingJsonPath() string
-	EditProxySettings(bool, string, string) error
+	EditProxySettings(proxyEnable bool, proxyServer string, proxyOverride string) error
 }
 
 type registryEditor struct {
